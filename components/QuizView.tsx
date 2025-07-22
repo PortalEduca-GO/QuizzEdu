@@ -215,12 +215,12 @@ const QuizView: React.FC = () => {
   
   const mainContent = isFinished ? (
     <div className="text-center">
-      {quiz.logoUrl && <img src={quiz.logoUrl} alt="Quiz Logo" className="max-h-24 w-auto object-contain mx-auto mb-6"/>}
-      <h2 className="text-4xl font-bold mb-4">Quiz Finalizado!</h2>
-      <p className="text-xl mb-6">Sua pontuação final é: <span className="font-bold text-primary">{score}</span> de {quiz.questions.length * 10}</p>
+      {quiz.logoUrl && <img src={quiz.logoUrl} alt="Quiz Logo" className="max-h-20 sm:max-h-24 w-auto object-contain mx-auto mb-4 sm:mb-6"/>}
+      <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Quiz Finalizado!</h2>
+      <p className="text-base sm:text-xl mb-4 sm:mb-6">Sua pontuação final é: <span className="font-bold text-primary">{score}</span> de {quiz.questions.length * 10}</p>
       <button
         onClick={restartQuiz}
-        className="px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary-focus transition-transform transform hover:scale-105"
+        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary-focus transition-transform transform hover:scale-105 text-base sm:text-lg"
       >
         Tentar Novamente
       </button>
@@ -317,15 +317,13 @@ const QuizView: React.FC = () => {
   );
 
   return (
-    <div 
-      style={{ fontFamily: `var(--font-${customization.fontFamily})` }} 
-      className={`quiz-container min-h-[calc(100vh-128px)] flex items-center justify-center p-4 ${customization.animationsEnabled ? 'animate-smooth' : ''}`}
+    <div
+      style={{ fontFamily: `var(--font-${customization.fontFamily})` }}
+      className={`quiz-container min-h-[calc(100vh-128px)] flex items-center justify-center p-2 sm:p-4 ${customization.animationsEnabled ? 'animate-smooth' : ''}`}
     >
-        <div className="w-full max-w-2xl mx-auto quiz-card text-inherit p-6 md:p-8 shadow-2xl border-2 border-white/10">
-            {mainContent}
-        </div>
+      <div className="w-full max-w-md sm:max-w-2xl mx-auto quiz-card text-inherit p-3 sm:p-6 md:p-8 shadow-2xl border-2 border-white/10">
+        {mainContent}
+      </div>
     </div>
   );
-};
-
-export default QuizView;
+}
