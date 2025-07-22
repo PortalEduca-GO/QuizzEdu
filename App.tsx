@@ -159,24 +159,25 @@ const App: React.FC = () => {
   }, []);
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
 
-  const [globalSettings, setGlobalSettings] = useState<GlobalPageSettings>(() => {
-    try {
-      const savedSettingsJson = localStorage.getItem(GLOBAL_SETTINGS_KEY);
-      if (savedSettingsJson) {
-        return JSON.parse(savedSettingsJson) as GlobalPageSettings;
-      }
-    } catch (error) {
-      console.error("Failed to parse global settings from localStorage", error);
-    }
-    return createDefaultGlobalSettings();
-  });
+  const [globalSettings, setGlobalSettings] = useState<GlobalPageSettings>(createDefaultGlobalSettings());
   // Carregar configurações globais do Supabase ao iniciar o app
   React.useEffect(() => {
     (async () => {
+      // Sempre busca do Supabase primeiro
       const remote = await import('./utils/supabaseConfig').then(mod => mod.loadAdminConfig('global_settings'));
       if (remote) {
         setGlobalSettings(remote);
         localStorage.setItem(GLOBAL_SETTINGS_KEY, JSON.stringify(remote));
+      } else {
+        // Se não houver no Supabase, tenta localStorage
+        try {
+          const savedSettingsJson = localStorage.getItem(GLOBAL_SETTINGS_KEY);
+          if (savedSettingsJson) {
+            setGlobalSettings(JSON.parse(savedSettingsJson));
+          }
+        } catch (error) {
+          console.error("Failed to parse global settings from localStorage", error);
+        }
       }
     })();
   }, []);
