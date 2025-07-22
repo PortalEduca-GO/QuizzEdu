@@ -1,0 +1,6 @@
+{
+  "name": "Criador de Quiz Dinâmico",
+  "description": "Uma aplicação para criar e personalizar quizzes interativos. Administradores podem montar perguntas, definir a lógica e customizar o visual, enquanto usuários podem responder aos quizzes criados.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

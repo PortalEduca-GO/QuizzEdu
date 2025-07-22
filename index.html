@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Criador de Quiz Dinâmico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: 'var(--color-primary)',
+              'primary-focus': 'var(--color-primary-focus)',
+              'text-color': 'var(--color-text)',
+              'bg-color': 'var(--color-bg)',
+            },
+            fontFamily: {
+                sans: ['Inter', 'sans-serif'],
+                serif: ['Lora', 'serif'],
+                mono: ['Fira Code', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
