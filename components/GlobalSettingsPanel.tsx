@@ -19,6 +19,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
       const remote = await loadAdminConfig('global_settings');
       if (remote) {
         setSettings(remote);
+        saveGlobalSettings(remote); // Atualiza localStorage também
       }
       setLoading(false);
     })();
@@ -105,9 +106,11 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
   };
 
   const handleSave = () => {
-    saveGlobalSettings(settings);
-    saveAdminConfig('global_settings', settings);
-    onClose();
+    // Salva no Supabase primeiro, depois local
+    saveAdminConfig('global_settings', settings).then(() => {
+      saveGlobalSettings(settings);
+      onClose();
+    });
   };
 
   const resetImage = (type: 'headerLogo' | 'footerLogo' | 'favicon') => {
