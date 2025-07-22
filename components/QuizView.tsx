@@ -13,7 +13,7 @@ const QuizView: React.FC = () => {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
-  // Permitir múltiplos usos dos auxílios
+  // Limite de uso dos auxílios para todo o quiz (não reinicia por questão)
   const [lifelinesUsed, setLifelinesUsed] = useState<{ askTheApi: number; probability: number }>({ askTheApi: 0, probability: 0 });
   const [isApiLoading, setIsApiLoading] = useState(false);
   const [probabilities, setProbabilities] = useState<Record<string, number> | null>(null);
@@ -135,6 +135,7 @@ const QuizView: React.FC = () => {
     setFeedback(null);
     setSelectedAnswerId(null);
     setProbabilities(null);
+    // NÃO reseta lifelinesUsed aqui!
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
@@ -151,7 +152,7 @@ const QuizView: React.FC = () => {
     setIsFinished(false);
     setFeedback(null);
     setProbabilities(null);
-    setLifelinesUsed({ askTheApi: 0, probability: 0 });
+    setLifelinesUsed({ askTheApi: 0, probability: 0 }); // Só reseta ao reiniciar o quiz
   };
 
   const handleAskTheApi = () => {
