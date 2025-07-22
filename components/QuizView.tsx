@@ -326,4 +326,6 @@ const QuizView: React.FC = () => {
       </div>
     </div>
   );
-}
+};
+
+export default QuizView;
