@@ -215,12 +215,12 @@ const QuizView: React.FC = () => {
   
   const mainContent = isFinished ? (
     <div className="text-center">
-      {quiz.logoUrl && <img src={quiz.logoUrl} alt="Quiz Logo" className="max-h-20 sm:max-h-24 w-auto object-contain mx-auto mb-4 sm:mb-6"/>}
-      <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Quiz Finalizado!</h2>
-      <p className="text-base sm:text-xl mb-4 sm:mb-6">Sua pontuação final é: <span className="font-bold text-primary">{score}</span> de {quiz.questions.length * 10}</p>
+      {quiz.logoUrl && <img src={quiz.logoUrl} alt="Quiz Logo" className="max-h-16 sm:max-h-24 w-auto object-contain mx-auto mb-2 sm:mb-6"/>}
+      <h2 className="text-xl sm:text-4xl font-bold mb-2 sm:mb-4">Quiz Finalizado!</h2>
+      <p className="text-sm sm:text-xl mb-2 sm:mb-6">Sua pontuação final é: <span className="font-bold text-primary">{score}</span> de {quiz.questions.length * 10}</p>
       <button
         onClick={restartQuiz}
-        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary-focus transition-transform transform hover:scale-105 text-base sm:text-lg"
+        className="w-full sm:w-auto px-4 sm:px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary-focus transition-transform transform hover:scale-105 text-base sm:text-lg"
       >
         Tentar Novamente
       </button>
@@ -284,7 +284,7 @@ const QuizView: React.FC = () => {
                 onClick={() => handleAnswerSelect(answer.id)}
                 disabled={!!feedback}
                 className={
-                  `w-full flex items-center justify-between px-6 py-4 rounded-xl border-2 text-lg font-medium transition-all duration-200 shadow-sm ` +
+                  `w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-medium transition-all duration-200 shadow-sm ` +
                   (isCorrect
                     ? 'bg-green-100 border-green-400 text-green-900'
                     : isIncorrect
@@ -293,11 +293,11 @@ const QuizView: React.FC = () => {
                         ? 'bg-blue-100 border-blue-400 text-blue-900'
                         : 'bg-white border-gray-300 text-gray-800 hover:bg-blue-50 hover:border-blue-300')
                 }
-                style={{ minHeight: 56 }}
+                style={{ minHeight: 48, minWidth: 44 }}
               >
-                <span>{answer.text}</span>
+                <span className="break-words text-left w-full text-sm sm:text-base">{answer.text}</span>
                 {prob !== null && (
-                  <span className="ml-4 text-base font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                  <span className="ml-2 sm:ml-4 text-xs sm:text-base font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
                     {prob}%
                   </span>
                 )}
