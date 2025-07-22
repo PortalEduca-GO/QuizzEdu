@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useQuiz } from '../App';
+import { saveAdminConfig, loadAdminConfig } from '../utils/supabaseConfig';
 import { GlobalPageSettings } from '../types';
 import { PhotoIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 
@@ -10,6 +11,18 @@ interface GlobalSettingsPanelProps {
 const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) => {
   const { globalSettings, saveGlobalSettings } = useQuiz();
   const [settings, setSettings] = useState<GlobalPageSettings>({ ...globalSettings });
+  const [loading, setLoading] = useState(true);
+  // Carregar configurações globais do Supabase ao abrir
+  React.useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const remote = await loadAdminConfig('global_settings');
+      if (remote) {
+        setSettings(remote);
+      }
+      setLoading(false);
+    })();
+  }, []);
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'logos'>('general');
 
   const headerLogoInputRef = useRef<HTMLInputElement | null>(null);
@@ -93,6 +106,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
 
   const handleSave = () => {
     saveGlobalSettings(settings);
+    saveAdminConfig('global_settings', settings);
     onClose();
   };
 
@@ -161,6 +175,11 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+            <span className="text-lg font-semibold text-blue-600">Carregando configurações...</span>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">

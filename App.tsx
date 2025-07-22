@@ -170,6 +170,16 @@ const App: React.FC = () => {
     }
     return createDefaultGlobalSettings();
   });
+  // Carregar configurações globais do Supabase ao iniciar o app
+  React.useEffect(() => {
+    (async () => {
+      const remote = await import('./utils/supabaseConfig').then(mod => mod.loadAdminConfig('global_settings'));
+      if (remote) {
+        setGlobalSettings(remote);
+        localStorage.setItem(GLOBAL_SETTINGS_KEY, JSON.stringify(remote));
+      }
+    })();
+  }, []);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
