@@ -31,8 +31,11 @@ const AppMinimal: React.FC = () => {
     setQuiz,
     quizzes,
     setQuizzes,
-    saveQuiz: () => {},
-    deleteQuiz: () => {},
+    saveQuiz: async () => null,
+    deleteQuiz: async () => {},
+    updateQuizLocally: () => {},
+    saveAllChanges: async () => {},
+    dirtyQuizIds: new Set<string>(),
     createNewQuiz: () => ({
       id: generateId(),
       headerText: 'Quiz Teste',
@@ -63,13 +66,13 @@ const AppMinimal: React.FC = () => {
       updatedAt: new Date().toISOString(),
       isPublished: false,
     }),
-    loadQuiz: () => {},
+    loadQuiz: async () => {},
     isAuthenticated,
     login: () => { setIsAuthenticated(true); return true; },
     logout: () => setIsAuthenticated(false),
     globalSettings,
     setGlobalSettings,
-    saveGlobalSettings: () => {}
+    saveGlobalSettings: async () => {}
   }), [quiz, quizzes, isAuthenticated, globalSettings]);
 
   return (

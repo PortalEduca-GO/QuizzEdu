@@ -376,7 +376,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
                 </div>
               </div>
               <div className="max-w-md">
-        {renderImageUpload('favicon', 'Favicon (ícone da aba)', settings.favicon, faviconInputRef as React.LegacyRef<HTMLInputElement>)}
+        {renderImageUpload('favicon', 'Favicon (ícone da aba)', settings.favicon, faviconInputRef)}
               </div>
             </div>
           )}
