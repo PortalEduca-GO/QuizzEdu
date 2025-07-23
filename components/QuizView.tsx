@@ -19,8 +19,9 @@ const QuizView: React.FC = () => {
   const [probabilities, setProbabilities] = useState<Record<string, number> | null>(null);
   
   const quiz = context?.quiz;
-  const askTheApiLimit = quiz?.askTheApiLimit ?? 1;
-  const audienceLimit = quiz?.audienceLimit ?? 1;
+  // Fallback para compatibilidade com bancos que ainda não têm essas colunas
+  const askTheApiLimit = quiz?.askTheApiLimit ?? (quiz ? 1 : 0);
+  const audienceLimit = quiz?.audienceLimit ?? (quiz ? 1 : 0);
   
   useEffect(() => {
     if (quiz) {
