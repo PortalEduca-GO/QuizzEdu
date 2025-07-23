@@ -58,7 +58,7 @@ const QuizView: React.FC = () => {
 
   // Inicia ou reinicia o timer ao trocar de pergunta
   useEffect(() => {
-    if (!quiz.questions.length || isFinished) return;
+    if (!quiz.questions.length || isFinished || !currentQuestion) return;
     const time = typeof currentQuestion.timeLimit === 'number' && currentQuestion.timeLimit >= 5 ? currentQuestion.timeLimit : 30;
     setTimeLeft(time);
     setTimerActive(true);
@@ -66,7 +66,7 @@ const QuizView: React.FC = () => {
     setFeedback(null);
     setProbabilities(null);
     setQuestionKey(prev => prev + 1); // Força reset do timer
-  }, [currentQuestionIndex, isFinished]);
+  }, [currentQuestionIndex, isFinished, currentQuestion]);
 
   // Timer countdown
   useEffect(() => {
@@ -96,9 +96,10 @@ const QuizView: React.FC = () => {
 
   const handleAnswerSelect = (answerId: string) => {
     // Proteção extra: só permite seleção se não houver feedback e se não houver resposta já selecionada
-    if (feedback || selectedAnswerId !== null) return;
+    if (feedback || selectedAnswerId !== null || isFinished) return;
     setSelectedAnswerId(answerId);
     setTimerActive(false); // Pausa o timer
+    
     // Exibe feedback imediatamente ao selecionar
     const isCorrect = answerId === currentQuestion.correctAnswerId;
     let message = '';
@@ -126,7 +127,8 @@ const QuizView: React.FC = () => {
     }
     setFeedback({ correct: isCorrect, message });
     if (isCorrect) setScore(prev => prev + 10);
-    // Avança imediatamente após resposta
+    
+    // Avança após mostrar feedback
     setTimeout(() => {
       proceedToNextQuestion();
     }, 1200);
@@ -250,6 +252,8 @@ const QuizView: React.FC = () => {
             <span role="img" aria-label="timer">⏰</span>
             <span>{timeLeft}s</span>
           </div>
+          {/* Só mostra as ajudas se estiverem habilitadas */}
+          {askTheApiLimit > 0 && (
             <button 
                 onClick={handleAskTheApi} 
                 disabled={lifelinesUsed.askTheApi >= askTheApiLimit || isApiLoading}
@@ -260,6 +264,8 @@ const QuizView: React.FC = () => {
                 <span className="hidden sm:inline">{isApiLoading ? 'Pensando...' : 'Universitário'}</span>
                 <span className="ml-2 text-xs bg-white/30 rounded px-2 py-0.5">{askTheApiLimit - lifelinesUsed.askTheApi}/{askTheApiLimit}</span>
             </button>
+          )}
+          {audienceLimit > 0 && (
             <button 
                 onClick={handleProbabilityLifeline} 
                 disabled={lifelinesUsed.probability >= audienceLimit || !!probabilities}
@@ -270,6 +276,7 @@ const QuizView: React.FC = () => {
                 <span className="hidden sm:inline">Plateia</span>
                 <span className="ml-2 text-xs bg-white/30 rounded px-2 py-0.5">{audienceLimit - lifelinesUsed.probability}/{audienceLimit}</span>
             </button>
+          )}
           </div>
         </div>
         <p className="text-lg mb-6">{currentQuestion.text}</p>

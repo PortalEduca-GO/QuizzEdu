@@ -14,7 +14,9 @@ import {
   EyeIcon,
   EyeSlashIcon,
   Cog6ToothIcon,
-  SwatchIcon
+  SwatchIcon,
+  AcademicCapIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 // Paletas de cores predefinidas
@@ -133,7 +135,7 @@ const AdminPanel: React.FC = () => {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'edit' | 'settings'>('list');
-  const [activeTab, setActiveTab] = useState<'basic' | 'design' | 'questions'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'design' | 'questions' | 'settings'>('basic');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!context) {
@@ -453,6 +455,17 @@ const AdminPanel: React.FC = () => {
               >
                 <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
                 Perguntas ({editingQuiz.questions.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeTab === 'settings'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                Configurações Avançadas
               </button>
             </nav>
           </div>
@@ -781,6 +794,28 @@ const AdminPanel: React.FC = () => {
                         />
                       </div>
 
+                      {/* Configurações da Pergunta */}
+                      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Configurações da Pergunta</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Tempo Limite (segundos)
+                            </label>
+                            <input
+                              type="number"
+                              min="5"
+                              max="300"
+                              value={question.timeLimit || 30}
+                              onChange={(e) => updateQuestion(question.id, 'timeLimit', parseInt(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="30"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Tempo em segundos para responder (mínimo 5)</p>
+                          </div>
+                        </div>
+                      </div>
+
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <label className="block text-sm font-semibold text-gray-700">
@@ -838,6 +873,140 @@ const AdminPanel: React.FC = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <Cog6ToothIcon className="h-6 w-6 mr-3 text-blue-600" />
+                Configurações Avançadas do Quiz
+              </h2>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Configurações de Ajudas */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <AcademicCapIcon className="h-5 w-5 mr-2 text-yellow-600" />
+                    Configurações de Ajudas
+                  </h3>
+
+                  <div>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={(editingQuiz.askTheApiLimit ?? 0) > 0}
+                        onChange={(e) => updateQuizField('askTheApiLimit', e.target.checked ? 1 : 0)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Ativar ajuda do "Universitário"</span>
+                    </label>
+                    {(editingQuiz.askTheApiLimit ?? 0) > 0 && (
+                      <div className="mt-3 ml-7">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantidade de usos por quiz
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={editingQuiz.askTheApiLimit || 1}
+                          onChange={(e) => updateQuizField('askTheApiLimit', parseInt(e.target.value))}
+                          className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Probabilidade de acerto: 60% - O universitário sugere uma resposta
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={(editingQuiz.audienceLimit ?? 0) > 0}
+                        onChange={(e) => updateQuizField('audienceLimit', e.target.checked ? 1 : 0)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Ativar ajuda da "Plateia"</span>
+                    </label>
+                    {(editingQuiz.audienceLimit ?? 0) > 0 && (
+                      <div className="mt-3 ml-7">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantidade de usos por quiz
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={editingQuiz.audienceLimit || 1}
+                          onChange={(e) => updateQuizField('audienceLimit', parseInt(e.target.value))}
+                          className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Probabilidade de acerto: 40% - Mostra porcentagens simuladas de votos
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Configurações de Feedback */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2 text-green-600" />
+                    Configurações de Feedback
+                  </h3>
+
+                  <div>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={editingQuiz.feedback?.randomize ?? false}
+                        onChange={(e) => updateQuizField('feedback', {
+                          ...editingQuiz.feedback,
+                          randomize: e.target.checked
+                        })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Randomizar mensagens de feedback</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mensagens para respostas corretas (uma por linha)
+                    </label>
+                    <textarea
+                      value={(editingQuiz.feedback?.correct || []).join('\n')}
+                      onChange={(e) => updateQuizField('feedback', {
+                        ...editingQuiz.feedback,
+                        correct: e.target.value.split('\n').filter(line => line.trim())
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                      placeholder="Correto!&#10;Muito bem!&#10;Excelente!"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mensagens para respostas incorretas (uma por linha)
+                    </label>
+                    <textarea
+                      value={(editingQuiz.feedback?.incorrect || []).join('\n')}
+                      onChange={(e) => updateQuizField('feedback', {
+                        ...editingQuiz.feedback,
+                        incorrect: e.target.value.split('\n').filter(line => line.trim())
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                      placeholder="Incorreto!&#10;Tente novamente!&#10;Não foi dessa vez!"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

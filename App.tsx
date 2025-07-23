@@ -31,6 +31,8 @@ const createInitialQuiz = (): Quiz => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     isPublished: true,
+    askTheApiLimit: 0, // Desabilitado por padrão
+    audienceLimit: 0, // Desabilitado por padrão
     customization: {
       backgroundColor: '#f0f4f8',
       textColor: '#1e293b',
@@ -307,6 +309,8 @@ const App: React.FC = () => {
     newQuiz.title = 'Novo Quiz';
     newQuiz.description = 'Descrição do seu novo quiz';
     newQuiz.isPublished = false;
+    newQuiz.askTheApiLimit = 0; // Desabilitado por padrão
+    newQuiz.audienceLimit = 0; // Desabilitado por padrão
     return newQuiz;
   }, []);
 
@@ -407,11 +411,21 @@ const App: React.FC = () => {
       )}
       
       <div 
-        className="min-h-screen flex flex-col"
+        className={`min-h-screen flex flex-col ${
+          globalSettings.fontFamily ? `font-${globalSettings.fontFamily}` : ''
+        } ${
+          globalSettings.fontSize ? `text-${globalSettings.fontSize}` : ''
+        } ${
+          globalSettings.borderRadius === 'none' ? 'rounded-none' :
+          globalSettings.borderRadius === 'small' ? 'rounded-sm' :
+          globalSettings.borderRadius === 'large' ? 'rounded-lg' : 'rounded-md'
+        }`}
         style={{ 
           backgroundColor: globalSettings.backgroundColor,
-          color: globalSettings.textColor
-        }}
+          color: globalSettings.textColor,
+          '--primary-color': globalSettings.primaryColor,
+          '--secondary-color': globalSettings.secondaryColor
+        } as React.CSSProperties}
       >
         <Header />
         <main className="p-4 sm:p-6 md:p-8 flex-grow">
