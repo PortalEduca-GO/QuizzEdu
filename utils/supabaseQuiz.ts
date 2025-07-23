@@ -3,38 +3,40 @@ import type { Quiz } from '../types';
 
 export async function saveQuizToSupabase(quiz: Quiz): Promise<Quiz> {
   try {
+    // Mapear os nomes das colunas para lowercase conforme PostgreSQL criou
+    const quizForDatabase = {
+      ...quiz,
+      asktheapilimit: quiz.askTheApiLimit,
+      audiencelimit: quiz.audienceLimit
+    };
+    
+    // Remove as propriedades camelCase para evitar conflito
+    delete (quizForDatabase as any).askTheApiLimit;
+    delete (quizForDatabase as any).audienceLimit;
+    
     const { data, error } = await supabase
       .from('quizzes')
-      .upsert([quiz], { onConflict: 'id' })
+      .upsert([quizForDatabase], { onConflict: 'id' })
       .select()
       .single();
 
     if (error) {
       console.error('Supabase save error:', error);
-      
-      // Se o erro for relacionado às colunas de lifelines, tenta salvar sem elas
-      if (error.message.includes('askTheApiLimit') || error.message.includes('audienceLimit')) {
-        console.warn('Colunas de lifelines não existem no banco. Salvando sem elas...');
-        const { askTheApiLimit, audienceLimit, ...quizWithoutLifelines } = quiz;
-        
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('quizzes')
-          .upsert([quizWithoutLifelines], { onConflict: 'id' })
-          .select()
-          .single();
-          
-        if (fallbackError) {
-          throw fallbackError;
-        }
-        
-        // Adiciona as propriedades de lifelines de volta aos dados retornados
-        return { ...fallbackData, askTheApiLimit: 1, audienceLimit: 1 } as Quiz;
-      }
-      
       throw error;
     }
     
-    return data as Quiz;
+    // Mapear de volta para camelCase no retorno
+    const result = {
+      ...data,
+      askTheApiLimit: data.asktheapilimit || 1,
+      audienceLimit: data.audiencelimit || 1
+    };
+    
+    // Remove as propriedades lowercase do resultado
+    delete (result as any).asktheapilimit;
+    delete (result as any).audiencelimit;
+    
+    return result as Quiz;
   } catch (err) {
     console.error('Erro ao salvar quiz:', err);
     throw err;
@@ -51,12 +53,18 @@ export async function loadQuizzesFromSupabase() {
     return [];
   }
   
-  // Adiciona valores padrão para propriedades que podem não existir no banco
+  // Mapear os nomes das colunas lowercase para camelCase
   const quizzesWithDefaults = data?.map(quiz => ({
     ...quiz,
-    askTheApiLimit: quiz.askTheApiLimit ?? 1,
-    audienceLimit: quiz.audienceLimit ?? 1
+    askTheApiLimit: quiz.asktheapilimit ?? 1,
+    audienceLimit: quiz.audiencelimit ?? 1
   })) || [];
+  
+  // Remove as propriedades lowercase para manter consistência
+  quizzesWithDefaults.forEach(quiz => {
+    delete (quiz as any).asktheapilimit;
+    delete (quiz as any).audiencelimit;
+  });
   
   return quizzesWithDefaults;
 }
