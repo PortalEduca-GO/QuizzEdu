@@ -1,11 +1,11 @@
 import React, { useContext, useState, useRef } from 'react';
 import { QuizContext } from '../App';
-import type { Quiz, Question, Answer } from '../types';
+import type { Quiz } from '../types';
 import GlobalSettingsPanel from './GlobalSettingsPanel';
-import { 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
   EyeIcon,
   EyeSlashIcon,
   DocumentDuplicateIcon,
@@ -37,13 +37,6 @@ const COLOR_PALETTES = {
     cardBackgroundColor: '#1e293b'
   },
   warm: {
-    name: 'Aconchegante',
-    backgroundColor: '#fef7ed',
-    textColor: '#7c2d12',
-    accentColor: '#ea580c',
-    secondaryColor: '#a3a3a3',
-    cardBackgroundColor: '#ffffff'
-  },
   nature: {
     name: 'Natureza',
     backgroundColor: '#f0fdf4',
@@ -170,56 +163,56 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const addQuestion = () => {
-    if (!editingQuiz) return;
-    
-    const newQuestion: Question = {
-      id: generateId(),
-      text: '',
-      answers: [
-        { id: generateId(), text: '' },
-        { id: generateId(), text: '' }
-      ],
-      correctAnswerId: ''
-    };
-    
-    setEditingQuiz({
-      ...editingQuiz,
-      questions: [...editingQuiz.questions, newQuestion]
-    });
-  };
-
-  const updateQuestion = (questionId: string, field: string, value: string) => {
-    if (!editingQuiz) return;
-    
-    setEditingQuiz({
-      ...editingQuiz,
-      questions: editingQuiz.questions.map(q => 
-        q.id === questionId ? { ...q, [field]: value } : q
-      )
-    });
-  };
-
-  const deleteQuestion = (questionId: string) => {
-    if (!editingQuiz) return;
-    
-    setEditingQuiz({
-      ...editingQuiz,
-      questions: editingQuiz.questions.filter(q => q.id !== questionId)
-    });
-  };
-
-  const addAnswer = (questionId: string) => {
-    if (!editingQuiz) return;
-    
-    const newAnswer: Answer = {
-      id: generateId(),
-      text: ''
-    };
-    
-    setEditingQuiz({
-      ...editingQuiz,
-      questions: editingQuiz.questions.map(q => 
+const COLOR_PALETTES = {
+  modern: {
+    name: 'Moderno',
+    backgroundColor: '#f8fafc',
+    textColor: '#1e293b',
+    accentColor: '#3b82f6',
+    secondaryColor: '#64748b',
+    cardBackgroundColor: '#ffffff',
+  },
+  dark: {
+    name: 'Escuro',
+    backgroundColor: '#0f172a',
+    textColor: '#f1f5f9',
+    accentColor: '#06b6d4',
+    secondaryColor: '#94a3b8',
+    cardBackgroundColor: '#1e293b',
+  },
+  warm: {
+    name: 'Aconchegante',
+    backgroundColor: '#fef7ed',
+    textColor: '#7c2d12',
+    accentColor: '#ea580c',
+    secondaryColor: '#a3a3a3',
+    cardBackgroundColor: '#ffffff',
+  },
+  nature: {
+    name: 'Natureza',
+    backgroundColor: '#f0fdf4',
+    textColor: '#14532d',
+    accentColor: '#16a34a',
+    secondaryColor: '#6b7280',
+    cardBackgroundColor: '#ffffff',
+  },
+  purple: {
+    name: 'Roxo',
+    backgroundColor: '#faf5ff',
+    textColor: '#581c87',
+    accentColor: '#9333ea',
+    secondaryColor: '#6b7280',
+    cardBackgroundColor: '#ffffff',
+  },
+  ocean: {
+    name: 'Oceano',
+    backgroundColor: '#f0f9ff',
+    textColor: '#0c4a6e',
+    accentColor: '#0284c7',
+    secondaryColor: '#64748b',
+    cardBackgroundColor: '#ffffff',
+  },
+};
         q.id === questionId 
           ? { ...q, answers: [...q.answers, newAnswer] }
           : q
@@ -498,31 +491,34 @@ const AdminPanel: React.FC = () => {
                   Paletas de Cores
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(COLOR_PALETTES).map(([key, palette]) => (
-                    <div
-                      key={key}
-                      onClick={() => applyColorPalette(palette)}
-                      className="cursor-pointer rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all p-4 group"
-                    >
-                      <div className="flex space-x-2 mb-3">
-                        <div 
-                          className="w-6 h-6 rounded-full" 
-                          style={{ backgroundColor: palette.backgroundColor }}
-                        ></div>
-                        <div 
-                          className="w-6 h-6 rounded-full" 
-                          style={{ backgroundColor: palette.accentColor }}
-                        ></div>
-                        <div 
-                          className="w-6 h-6 rounded-full" 
-                          style={{ backgroundColor: palette.cardBackgroundColor }}
-                        ></div>
+                  {Object.entries(COLOR_PALETTES).map(([key, palette]) => {
+                    const typedPalette = palette as typeof COLOR_PALETTES.modern;
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => applyColorPalette(typedPalette)}
+                        className="cursor-pointer rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all p-4 group"
+                      >
+                        <div className="flex space-x-2 mb-3">
+                          <div 
+                            className="w-6 h-6 rounded-full" 
+                            style={{ backgroundColor: typedPalette.backgroundColor }}
+                          ></div>
+                          <div 
+                            className="w-6 h-6 rounded-full" 
+                            style={{ backgroundColor: typedPalette.accentColor }}
+                          ></div>
+                          <div 
+                            className="w-6 h-6 rounded-full" 
+                            style={{ backgroundColor: typedPalette.cardBackgroundColor }}
+                          ></div>
+                        </div>
+                        <p className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
+                          {typedPalette.name}
+                        </p>
                       </div>
-                      <p className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
-                        {palette.name}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
