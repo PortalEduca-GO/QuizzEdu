@@ -26,9 +26,9 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
   }, []);
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'logos'>('general');
 
-  const headerLogoInputRef = useRef<HTMLInputElement | null>(null);
-  const footerLogoInputRef = useRef<HTMLInputElement | null>(null);
-  const faviconInputRef = useRef<HTMLInputElement | null>(null);
+  const headerLogoInputRef = useRef<HTMLInputElement>(null);
+  const footerLogoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (
     file: File,
@@ -166,7 +166,9 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
       )}
       
       <input
-        ref={inputRef}
+        ref={type === 'headerLogo' ? headerLogoInputRef : 
+             type === 'footerLogo' ? footerLogoInputRef :
+             faviconInputRef}
         type="file"
         accept="image/*"
         onChange={(e) => handleFileChange(e, type)}

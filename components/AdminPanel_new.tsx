@@ -9,7 +9,6 @@ import {
   EyeIcon,
   EyeSlashIcon,
   DocumentDuplicateIcon,
-  CheckIcon,
   XMarkIcon,
   ArrowLeftIcon,
   PhotoIcon,
