@@ -124,7 +124,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
     type: 'headerLogo' | 'footerLogo' | 'favicon',
     label: string,
     currentImage: string | null,
-    inputRef: React.RefObject<HTMLInputElement>
+    inputRef: React.LegacyRef<HTMLInputElement>
   ) => (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -153,7 +153,11 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
         </div>
       ) : (
         <div
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            if (typeof inputRef === 'object' && inputRef !== null && 'current' in inputRef) {
+              inputRef.current?.click();
+            }
+          }}
           className="flex flex-col items-center justify-center p-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
         >
           <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
