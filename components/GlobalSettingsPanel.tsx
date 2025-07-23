@@ -24,7 +24,11 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
       setLoading(false);
     })();
   }, []);
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'logos'>('general');
+  // Inicializa na aba 'general', mas mantém navegação funcional
+  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'logos'>();
+  React.useEffect(() => {
+    if (!activeTab) setActiveTab('general');
+  }, [activeTab]);
 
   const headerLogoInputRef = useRef<HTMLInputElement>(null);
   const footerLogoInputRef = useRef<HTMLInputElement>(null);
