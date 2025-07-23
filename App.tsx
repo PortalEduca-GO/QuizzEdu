@@ -7,6 +7,7 @@ import QuizList from './components/QuizList';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Login from './components/Login';
+import { saveQuizToSupabase, loadQuizzesFromSupabase, deleteQuizFromSupabase } from './utils/supabaseQuiz';
 
 export const QuizContext = createContext<QuizContextType | null>(null);
 
@@ -85,7 +86,6 @@ const createInitialQuiz = (): Quiz => {
   return quiz;
 };
 
-const SAVED_QUIZZES_KEY = 'my-dynamic-quiz-app-quizzes';
 const GLOBAL_SETTINGS_KEY = 'my-dynamic-quiz-app-global-settings';
 const AUTH_KEY = 'quiz-admin-auth-secure';
 const ADMIN_PASSWORD = 'Surf@2025';
@@ -128,35 +128,20 @@ const QuizViewWrapper: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<Quiz[]>(() => {
-    try {
-      const savedQuizzesJson = localStorage.getItem(SAVED_QUIZZES_KEY);
-      if (savedQuizzesJson) {
-        const parsed = JSON.parse(savedQuizzesJson) as Quiz[];
-        // Se não houver quizzes publicados, cria um padrão
-        if (!parsed || !Array.isArray(parsed) || parsed.length === 0 || !parsed.some(q => q.isPublished)) {
-          const initial = [createInitialQuiz()];
-          localStorage.setItem(SAVED_QUIZZES_KEY, JSON.stringify(initial));
-          return initial;
-        }
-        return parsed;
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  useEffect(() => {
+    (async () => {
+      const remoteQuizzes = await loadQuizzesFromSupabase();
+      if (remoteQuizzes && Array.isArray(remoteQuizzes) && remoteQuizzes.length > 0) {
+        setQuizzes(remoteQuizzes);
+      } else {
+        setQuizzes([createInitialQuiz()]);
       }
-    } catch (error) {
-      console.error("Failed to parse saved quizzes from localStorage", error);
-    }
-    const initial = [createInitialQuiz()];
-    localStorage.setItem(SAVED_QUIZZES_KEY, JSON.stringify(initial));
-    return initial;
-  });
+    })();
+  }, []);
 
   // Efeito para limpar quizzes inválidos do localStorage e garantir pelo menos um quiz publicado
-  useEffect(() => {
-    if (!quizzes || quizzes.length === 0 || !quizzes.some(q => q.isPublished)) {
-      const initial = [createInitialQuiz()];
-      setQuizzes(initial);
-      localStorage.setItem(SAVED_QUIZZES_KEY, JSON.stringify(initial));
-    }
-  }, []);
+  // Remove fallback localStorage init
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
 
   const [globalSettings, setGlobalSettings] = useState<GlobalPageSettings>(createDefaultGlobalSettings());
@@ -268,47 +253,17 @@ const App: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  const saveQuizzes = useCallback((quizzesToSave: Quiz[]) => {
-    try {
-      localStorage.setItem(SAVED_QUIZZES_KEY, JSON.stringify(quizzesToSave));
-    } catch (error) {
-      console.error("Failed to save quizzes to localStorage", error);
-    }
+  const saveQuiz = useCallback(async (quizToSave: Quiz) => {
+    await saveQuizToSupabase({ ...quizToSave, updatedAt: new Date().toISOString() });
+    const remoteQuizzes = await loadQuizzesFromSupabase();
+    setQuizzes(remoteQuizzes);
   }, []);
 
-  const saveQuiz = useCallback((quizToSave: Quiz) => {
-    setQuizzes(prevQuizzes => {
-      const existingIndex = prevQuizzes.findIndex(q => q.id === quizToSave.id);
-      let updatedQuizzes: Quiz[];
-      
-      if (existingIndex >= 0) {
-        // Update existing quiz
-        updatedQuizzes = prevQuizzes.map(q => 
-          q.id === quizToSave.id 
-            ? { ...quizToSave, updatedAt: new Date().toISOString() }
-            : q
-        );
-      } else {
-        // Add new quiz
-        updatedQuizzes = [...prevQuizzes, { 
-          ...quizToSave, 
-          createdAt: new Date().toISOString(), 
-          updatedAt: new Date().toISOString() 
-        }];
-      }
-      
-      saveQuizzes(updatedQuizzes);
-      return updatedQuizzes;
-    });
-  }, [saveQuizzes]);
-
-  const deleteQuiz = useCallback((quizId: string) => {
-    setQuizzes(prevQuizzes => {
-      const updatedQuizzes = prevQuizzes.filter(q => q.id !== quizId);
-      saveQuizzes(updatedQuizzes);
-      return updatedQuizzes;
-    });
-  }, [saveQuizzes]);
+  const deleteQuiz = useCallback(async (quizId: string) => {
+    await deleteQuizFromSupabase(quizId);
+    const remoteQuizzes = await loadQuizzesFromSupabase();
+    setQuizzes(remoteQuizzes);
+  }, []);
 
   const createNewQuiz = useCallback((): Quiz => {
     const newQuiz = createInitialQuiz();
@@ -318,12 +273,13 @@ const App: React.FC = () => {
     return newQuiz;
   }, []);
 
-  const loadQuiz = useCallback((quizId: string) => {
-    const quiz = quizzes.find(q => q.id === quizId);
+  const loadQuiz = useCallback(async (quizId: string) => {
+    const remoteQuizzes = await loadQuizzesFromSupabase();
+    const quiz = remoteQuizzes.find((q: Quiz) => q.id === quizId);
     if (quiz) {
       setCurrentQuiz(quiz);
     }
-  }, [quizzes]);
+  }, []);
 
   const login = useCallback((password: string): boolean => {
     if (password !== ADMIN_PASSWORD) {
@@ -370,10 +326,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Auto-save quizzes when they change
-  useEffect(() => {
-    saveQuizzes(quizzes);
-  }, [quizzes, saveQuizzes]);
+  // Remove auto-save localStorage effect
 
   const quizContextValue = useMemo(() => ({ 
     quiz: currentQuiz, 

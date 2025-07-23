@@ -124,7 +124,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
     type: 'headerLogo' | 'footerLogo' | 'favicon',
     label: string,
     currentImage: string | null,
-    inputRef: React.LegacyRef<HTMLInputElement>
+    inputRef: React.RefObject<HTMLInputElement>
   ) => (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -170,9 +170,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
       )}
       
       <input
-        ref={type === 'headerLogo' ? headerLogoInputRef : 
-             type === 'footerLogo' ? footerLogoInputRef :
-             faviconInputRef}
+        ref={inputRef as React.LegacyRef<HTMLInputElement>}
         type="file"
         accept="image/*"
         onChange={(e) => handleFileChange(e, type)}
