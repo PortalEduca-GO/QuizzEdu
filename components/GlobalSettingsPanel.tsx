@@ -41,22 +41,21 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
       const img = new Image();
 
       img.onload = () => {
-        // Calcular dimensões mantendo proporção
-        let { width, height } = img;
-        
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width *= ratio;
-          height *= ratio;
-        }
+          // Calcular dimensões mantendo proporção, sem cortar
+          let { width, height } = img;
+          const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
 
-        canvas.width = width;
-        canvas.height = height;
+          canvas.width = maxWidth;
+          canvas.height = maxHeight;
 
-        if (ctx) {
-          // Desenhar com fundo transparente para manter qualidade
-          ctx.clearRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0, width, height);
+          if (ctx) {
+            ctx.clearRect(0, 0, maxWidth, maxHeight);
+            // Centralizar imagem sem cortar
+            const x = (maxWidth - width) / 2;
+            const y = (maxHeight - height) / 2;
+            ctx.drawImage(img, x, y, width, height);
           
           // Converter para base64 com qualidade otimizada
           const dataUrl = canvas.toDataURL('image/png', 0.9);
@@ -360,6 +359,38 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
                     onChange={(e) => setSettings(prev => ({ ...prev, textColor: e.target.value }))}
                     className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" title="Escolha a fonte do site">Fonte</label>
+                <select value={settings.fontFamily || 'sans'} onChange={e => setSettings(prev => ({ ...prev, fontFamily: e.target.value }))} className="w-full p-2 border border-gray-300 rounded-lg">
+                  <option value="sans">Sans Serif (Padrão)</option>
+                  <option value="serif">Serif</option>
+                  <option value="mono">Monospace</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" title="Tamanho da fonte">Tamanho da Fonte</label>
+                <select value={settings.fontSize || 'medium'} onChange={e => setSettings(prev => ({ ...prev, fontSize: e.target.value }))} className="w-full p-2 border border-gray-300 rounded-lg">
+                  <option value="small">Pequeno</option>
+                  <option value="medium">Médio</option>
+                  <option value="large">Grande</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" title="Arredondamento das bordas">Bordas</label>
+                <select value={settings.borderRadius || 'medium'} onChange={e => setSettings(prev => ({ ...prev, borderRadius: e.target.value }))} className="w-full p-2 border border-gray-300 rounded-lg">
+                  <option value="none">Sem arredondamento</option>
+                  <option value="small">Pequeno</option>
+                  <option value="medium">Médio</option>
+                  <option value="large">Grande</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" title="Ativar animações no site">Animações</label>
+                <div className="flex items-center space-x-3">
+                  <input type="checkbox" checked={settings.animationsEnabled ?? true} onChange={e => setSettings(prev => ({ ...prev, animationsEnabled: e.target.checked }))} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                  <span className="text-sm text-gray-700">Ativar animações</span>
                 </div>
               </div>
             </div>

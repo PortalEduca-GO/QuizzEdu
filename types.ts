@@ -44,6 +44,10 @@ export interface GlobalPageSettings {
   textColor: string;
   favicon: string | null; // base64 ou data URL da imagem
   customCSS: string;
+  fontFamily?: string;
+  fontSize?: string;
+  borderRadius?: string;
+  animationsEnabled?: boolean;
 }
 
 export interface QuizFeedback {
