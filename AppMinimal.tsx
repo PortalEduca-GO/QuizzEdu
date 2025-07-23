@@ -53,6 +53,11 @@ const AppMinimal: React.FC = () => {
         animationsEnabled: true,
         theme: 'light',
       },
+      feedback: {
+        randomize: false,
+        correct: ['Parabéns! Você acertou!'],
+        incorrect: ['Ops! Tente novamente!']
+      },
       footer: { text: 'Footer teste' },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
