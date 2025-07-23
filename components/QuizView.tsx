@@ -60,6 +60,7 @@ const QuizView: React.FC = () => {
   // Inicia ou reinicia o timer ao trocar de pergunta
   useEffect(() => {
     if (!quiz.questions.length || isFinished || !currentQuestion) return;
+    
     const time = typeof currentQuestion.timeLimit === 'number' && currentQuestion.timeLimit >= 5 ? currentQuestion.timeLimit : 30;
     setTimeLeft(time);
     setTimerActive(true);
@@ -67,39 +68,44 @@ const QuizView: React.FC = () => {
     setFeedback(null);
     setProbabilities(null);
     setQuestionKey(prev => prev + 1); // Força reset do timer
-  }, [currentQuestionIndex, isFinished, currentQuestion]);
+  }, [currentQuestionIndex, isFinished, currentQuestion, quiz.questions.length]);
 
   // Timer countdown
   useEffect(() => {
-    if (!timerActive || feedback || isFinished) return;
+    if (!timerActive || feedback || isFinished || !currentQuestion) return;
+    
     if (timeLeft <= 0) {
       setTimerActive(false);
       setFeedback({ correct: false, message: 'Tempo esgotado!' });
       setTimeout(() => {
-        // Se não for a última pergunta, avança; se for, apenas mostra resultado
-        if (currentQuestionIndex < quiz.questions.length - 1) {
-          setCurrentQuestionIndex(prev => prev + 1);
-          setFeedback(null);
-          setSelectedAnswerId(null);
-          setProbabilities(null);
-        } else {
-          setIsFinished(true);
-        }
+        proceedToNextQuestion();
       }, 1200);
       return;
     }
+    
     const interval = setInterval(() => {
-      setTimeLeft(t => t - 1);
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setTimerActive(false);
+          setFeedback({ correct: false, message: 'Tempo esgotado!' });
+          setTimeout(() => {
+            proceedToNextQuestion();
+          }, 1200);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
+    
     return () => clearInterval(interval);
-    // eslint-disable-next-line
-  }, [timerActive, timeLeft, feedback, isFinished, questionKey, currentQuestionIndex, quiz.questions.length]);
+  }, [timerActive, feedback, isFinished, currentQuestion, questionKey]);
 
   const handleAnswerSelect = (answerId: string) => {
-    // Proteção extra: só permite seleção se não houver feedback e se não houver resposta já selecionada
-    if (feedback || selectedAnswerId !== null || isFinished) return;
+    // Proteção extra: só permite seleção se não houver feedback, não houver resposta já selecionada, e o quiz não estiver finalizado
+    if (feedback || selectedAnswerId !== null || isFinished || !timerActive) return;
+    
     setSelectedAnswerId(answerId);
-    setTimerActive(false); // Pausa o timer
+    setTimerActive(false); // Pausa o timer imediatamente
     
     // Exibe feedback imediatamente ao selecionar
     const isCorrect = answerId === currentQuestion.correctAnswerId;
@@ -126,6 +132,7 @@ const QuizView: React.FC = () => {
     } else {
       message = isCorrect ? 'Correto!' : 'Incorreto!';
     }
+    
     setFeedback({ correct: isCorrect, message });
     if (isCorrect) setScore(prev => prev + 10);
     
@@ -136,14 +143,19 @@ const QuizView: React.FC = () => {
   };
   
   const proceedToNextQuestion = () => {
+    if (isFinished) return; // Proteção extra
+    
     setFeedback(null);
     setSelectedAnswerId(null);
     setProbabilities(null);
+    setTimerActive(false);
+    
     // NÃO reseta lifelinesUsed aqui!
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setIsFinished(true);
+      setTimerActive(false);
     }
   };
 
@@ -156,7 +168,9 @@ const QuizView: React.FC = () => {
     setIsFinished(false);
     setFeedback(null);
     setProbabilities(null);
+    setTimerActive(false);
     setLifelinesUsed({ askTheApi: 0, probability: 0 }); // Só reseta ao reiniciar o quiz
+    setQuestionKey(prev => prev + 1); // Força reinicialização do timer
   };
 
   const handleAskTheApi = () => {
@@ -291,9 +305,11 @@ const QuizView: React.FC = () => {
               <button
                 key={answer.id}
                 onClick={() => handleAnswerSelect(answer.id)}
-                disabled={!!feedback}
+                disabled={!!feedback || selectedAnswerId !== null || isFinished || !timerActive}
                 className={
-                  `w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-medium transition-all duration-200 shadow-sm ` +
+                  `w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-medium transition-all duration-200 shadow-sm ${
+                    !!feedback || selectedAnswerId !== null || isFinished || !timerActive ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                  } ` +
                   (isCorrect
                     ? 'bg-green-100 border-green-400 text-green-900'
                     : isIncorrect

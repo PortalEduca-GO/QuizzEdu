@@ -1,7 +1,7 @@
 import React, { useState, createContext, useMemo, useCallback, useEffect } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import type { Quiz, QuizContextType, GlobalPageSettings } from './types';
-import AdminPanel from './components/AdminPanel';
+import AdminPanel from './components/AdminPanel_new';
 import QuizView from './components/QuizView';
 import QuizList from './components/QuizList';
 import Header from './components/Header';
@@ -131,13 +131,26 @@ const QuizViewWrapper: React.FC = () => {
 
 const App: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     (async () => {
-      const remoteQuizzes = await loadQuizzesFromSupabase();
-      if (remoteQuizzes && Array.isArray(remoteQuizzes) && remoteQuizzes.length > 0) {
-        setQuizzes(remoteQuizzes);
-      } else {
+      try {
+        setIsLoading(true);
+        const remoteQuizzes = await loadQuizzesFromSupabase();
+        if (remoteQuizzes && Array.isArray(remoteQuizzes) && remoteQuizzes.length > 0) {
+          setQuizzes(remoteQuizzes);
+        } else {
+          // Criar quiz inicial apenas se não houver nenhum quiz
+          const initialQuiz = createInitialQuiz();
+          setQuizzes([initialQuiz]);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar quizzes:', error);
+        // Em caso de erro, criar quiz inicial como fallback
         setQuizzes([createInitialQuiz()]);
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -429,14 +442,23 @@ const App: React.FC = () => {
       >
         <Header />
         <main className="p-4 sm:p-6 md:p-8 flex-grow">
-          <Routes>
-            <Route path="/" element={<QuizList />} />
-            <Route path="/quiz-list" element={<QuizList />} />
-            <Route path="/admin" element={
-              isAuthenticated ? <AdminPanel /> : <Login onLogin={login} />
-            } />
-            <Route path="/quiz/:id" element={<QuizViewWrapper />} />
-          </Routes>
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="text-center">
+                <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-600">Carregando quizzes...</p>
+              </div>
+            </div>
+          ) : (
+            <Routes>
+              <Route path="/" element={<QuizList />} />
+              <Route path="/quiz-list" element={<QuizList />} />
+              <Route path="/admin" element={
+                isAuthenticated ? <AdminPanel /> : <Login onLogin={login} />
+              } />
+              <Route path="/quiz/:id" element={<QuizViewWrapper />} />
+            </Routes>
+          )}
         </main>
         <Footer />
       </div>

@@ -210,11 +210,55 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleSaveQuiz = () => {
-    if (editingQuiz) {
-      updateQuizLocally(editingQuiz);
-      setEditingQuiz(null);
-      setViewMode('list');
+    if (!editingQuiz) return;
+
+    // Validação básica
+    if (!editingQuiz.title.trim()) {
+      alert('O título do quiz é obrigatório.');
+      return;
     }
+
+    if (editingQuiz.questions.length === 0) {
+      alert('O quiz deve ter pelo menos uma pergunta.');
+      return;
+    }
+
+    // Validar se todas as perguntas têm texto e pelo menos 2 respostas
+    for (const question of editingQuiz.questions) {
+      if (!question.text.trim()) {
+        alert('Todas as perguntas devem ter texto.');
+        return;
+      }
+
+      if (question.answers.length < 2) {
+        alert('Cada pergunta deve ter pelo menos 2 opções de resposta.');
+        return;
+      }
+
+      if (!question.correctAnswerId) {
+        alert('Todas as perguntas devem ter uma resposta correta selecionada.');
+        return;
+      }
+
+      // Verificar se a resposta correta ainda existe
+      const correctAnswerExists = question.answers.some(answer => answer.id === question.correctAnswerId);
+      if (!correctAnswerExists) {
+        alert('Erro: Uma das perguntas tem uma resposta correta inválida. Por favor, verifique.');
+        return;
+      }
+
+      // Verificar se todas as respostas têm texto
+      for (const answer of question.answers) {
+        if (!answer.text.trim()) {
+          alert('Todas as opções de resposta devem ter texto.');
+          return;
+        }
+      }
+    }
+
+    updateQuizLocally(editingQuiz);
+    setEditingQuiz(null);
+    setViewMode('list');
   };
 
   const handleCancelEdit = () => {
