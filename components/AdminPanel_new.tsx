@@ -1,22 +1,9 @@
 import React, { useContext, useState, useRef } from 'react';
 import { QuizContext } from '../App';
-import type { Quiz } from '../types';
-import GlobalSettingsPanel from './GlobalSettingsPanel';
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  DocumentDuplicateIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  PhotoIcon,
-  SwatchIcon,
-  AdjustmentsHorizontalIcon,
-  PaintBrushIcon,
-  Cog6ToothIcon
-} from '@heroicons/react/24/outline';
+import { useQuiz } from '../App';
+import { saveAdminConfig } from '../utils/supabaseConfig';
+import { Quiz, Question, Answer, QuizCustomization, Feedback } from '../types';
+import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 // Paletas de cores predefinidas
 const COLOR_PALETTES = {
@@ -37,6 +24,13 @@ const COLOR_PALETTES = {
     cardBackgroundColor: '#1e293b'
   },
   warm: {
+    name: 'Aconchegante',
+    backgroundColor: '#fef7ed',
+    textColor: '#7c2d12',
+    accentColor: '#ea580c',
+    secondaryColor: '#a3a3a3',
+    cardBackgroundColor: '#ffffff',
+  },
   nature: {
     name: 'Natureza',
     backgroundColor: '#f0fdf4',
