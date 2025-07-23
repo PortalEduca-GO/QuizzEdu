@@ -1,9 +1,21 @@
 import React, { useContext, useState, useRef } from 'react';
 import { QuizContext } from '../App';
-import { useQuiz } from '../App';
-import { saveAdminConfig } from '../utils/supabaseConfig';
-import { Quiz, Question, Answer, QuizCustomization, Feedback } from '../types';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import type { Quiz, Question, Answer } from '../types';
+import {
+  PhotoIcon,
+  XMarkIcon,
+  ArrowLeftIcon,
+  PencilIcon,
+  PaintBrushIcon,
+  AdjustmentsHorizontalIcon,
+  PlusIcon,
+  TrashIcon,
+  DocumentDuplicateIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  Cog6ToothIcon,
+  SwatchIcon
+} from '@heroicons/react/24/outline';
 
 // Paletas de cores predefinidas
 const COLOR_PALETTES = {
@@ -57,6 +69,65 @@ const COLOR_PALETTES = {
   }
 };
 
+// Componente de configurações globais (placeholder)
+const GlobalSettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto py-8 px-4">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ArrowLeftIcon className="h-6 w-6" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Configurações do Site</h1>
+              <p className="text-gray-600">Configure as opções globais do seu site</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Configurações Gerais</h2>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Nome do Site</label>
+              <input
+                type="text"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="Digite o nome do seu site"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Descrição do Site</label>
+              <textarea
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="Descreva o propósito do seu site"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">
+                Salvar Configurações
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminPanel: React.FC = () => {
   const context = useContext(QuizContext);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -89,7 +160,7 @@ const AdminPanel: React.FC = () => {
   // Função para aplicar paleta de cores
   const applyColorPalette = (palette: typeof COLOR_PALETTES.modern) => {
     if (!editingQuiz) return;
-    
+
     const updatedCustomization = {
       ...editingQuiz.customization,
       backgroundColor: palette.backgroundColor,
@@ -98,19 +169,27 @@ const AdminPanel: React.FC = () => {
       secondaryColor: palette.secondaryColor,
       cardBackgroundColor: palette.cardBackgroundColor
     };
-    
+
     updateQuizField('customization', updatedCustomization);
   };
 
   // Função para atualizar uma propriedade específica da customização
   const updateCustomization = (property: string, value: any) => {
     if (!editingQuiz) return;
-    
+
+    const currentCustomization = editingQuiz.customization || {
+      backgroundColor: '#f8fafc',
+      textColor: '#1e293b',
+      accentColor: '#3b82f6',
+      secondaryColor: '#64748b',
+      cardBackgroundColor: '#ffffff'
+    };
+
     const updatedCustomization = {
-      ...editingQuiz.customization,
+      ...currentCustomization,
       [property]: value
     };
-    
+
     updateQuizField('customization', updatedCustomization);
   };
 
@@ -157,57 +236,59 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-const COLOR_PALETTES = {
-  modern: {
-    name: 'Moderno',
-    backgroundColor: '#f8fafc',
-    textColor: '#1e293b',
-    accentColor: '#3b82f6',
-    secondaryColor: '#64748b',
-    cardBackgroundColor: '#ffffff',
-  },
-  dark: {
-    name: 'Escuro',
-    backgroundColor: '#0f172a',
-    textColor: '#f1f5f9',
-    accentColor: '#06b6d4',
-    secondaryColor: '#94a3b8',
-    cardBackgroundColor: '#1e293b',
-  },
-  warm: {
-    name: 'Aconchegante',
-    backgroundColor: '#fef7ed',
-    textColor: '#7c2d12',
-    accentColor: '#ea580c',
-    secondaryColor: '#a3a3a3',
-    cardBackgroundColor: '#ffffff',
-  },
-  nature: {
-    name: 'Natureza',
-    backgroundColor: '#f0fdf4',
-    textColor: '#14532d',
-    accentColor: '#16a34a',
-    secondaryColor: '#6b7280',
-    cardBackgroundColor: '#ffffff',
-  },
-  purple: {
-    name: 'Roxo',
-    backgroundColor: '#faf5ff',
-    textColor: '#581c87',
-    accentColor: '#9333ea',
-    secondaryColor: '#6b7280',
-    cardBackgroundColor: '#ffffff',
-  },
-  ocean: {
-    name: 'Oceano',
-    backgroundColor: '#f0f9ff',
-    textColor: '#0c4a6e',
-    accentColor: '#0284c7',
-    secondaryColor: '#64748b',
-    cardBackgroundColor: '#ffffff',
-  },
-};
-        q.id === questionId 
+  // Funções para gerenciar perguntas
+  const addQuestion = () => {
+    if (!editingQuiz) return;
+
+    const newQuestion: Question = {
+      id: generateId(),
+      text: '',
+      correctAnswerId: '',
+      answers: [
+        { id: generateId(), text: '' },
+        { id: generateId(), text: '' }
+      ]
+    };
+
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: [...editingQuiz.questions, newQuestion]
+    });
+  };
+
+  const deleteQuestion = (questionId: string) => {
+    if (!editingQuiz) return;
+
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: editingQuiz.questions.filter(q => q.id !== questionId)
+    });
+  };
+
+  const updateQuestion = (questionId: string, field: string, value: any) => {
+    if (!editingQuiz) return;
+
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: editingQuiz.questions.map(q =>
+        q.id === questionId ? { ...q, [field]: value } : q
+      )
+    });
+  };
+
+  // Funções para gerenciar respostas
+  const addAnswer = (questionId: string) => {
+    if (!editingQuiz) return;
+
+    const newAnswer: Answer = {
+      id: generateId(),
+      text: ''
+    };
+
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: editingQuiz.questions.map(q =>
+        q.id === questionId
           ? { ...q, answers: [...q.answers, newAnswer] }
           : q
       )
@@ -216,14 +297,14 @@ const COLOR_PALETTES = {
 
   const updateAnswer = (questionId: string, answerId: string, text: string) => {
     if (!editingQuiz) return;
-    
+
     setEditingQuiz({
       ...editingQuiz,
-      questions: editingQuiz.questions.map(q => 
-        q.id === questionId 
+      questions: editingQuiz.questions.map(q =>
+        q.id === questionId
           ? {
               ...q,
-              answers: q.answers.map(a => 
+              answers: q.answers.map(a =>
                 a.id === answerId ? { ...a, text } : a
               )
             }
@@ -234,13 +315,13 @@ const COLOR_PALETTES = {
 
   const deleteAnswer = (questionId: string, answerId: string) => {
     if (!editingQuiz) return;
-    
+
     setEditingQuiz({
       ...editingQuiz,
-      questions: editingQuiz.questions.map(q => 
-        q.id === questionId 
-          ? { 
-              ...q, 
+      questions: editingQuiz.questions.map(q =>
+        q.id === questionId
+          ? {
+              ...q,
               answers: q.answers.filter(a => a.id !== answerId),
               correctAnswerId: q.correctAnswerId === answerId ? '' : q.correctAnswerId
             }
@@ -251,10 +332,10 @@ const COLOR_PALETTES = {
 
   const setCorrectAnswer = (questionId: string, answerId: string) => {
     if (!editingQuiz) return;
-    
+
     setEditingQuiz({
       ...editingQuiz,
-      questions: editingQuiz.questions.map(q => 
+      questions: editingQuiz.questions.map(q =>
         q.id === questionId ? { ...q, correctAnswerId: answerId } : q
       )
     });
@@ -381,7 +462,7 @@ const COLOR_PALETTES = {
                 <PencilIcon className="h-6 w-6 mr-3 text-blue-600" />
                 Informações Básicas
               </h2>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
@@ -394,7 +475,7 @@ const COLOR_PALETTES = {
                       placeholder="Digite um título atrativo para o quiz"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3">Descrição</label>
                     <textarea
@@ -416,7 +497,7 @@ const COLOR_PALETTES = {
                       placeholder="Texto que aparece no topo do quiz"
                     />
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <input
                       type="checkbox"
@@ -448,7 +529,7 @@ const COLOR_PALETTES = {
                         </button>
                       </div>
                     )}
-                    
+
                     <div
                       onClick={() => fileInputRef.current?.click()}
                       className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
@@ -457,7 +538,7 @@ const COLOR_PALETTES = {
                       <p className="text-gray-600 font-medium">Clique para selecionar uma imagem</p>
                       <p className="text-gray-400 text-sm mt-1">PNG, JPG, GIF até 5MB</p>
                     </div>
-                    
+
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -494,16 +575,16 @@ const COLOR_PALETTES = {
                         className="cursor-pointer rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all p-4 group"
                       >
                         <div className="flex space-x-2 mb-3">
-                          <div 
-                            className="w-6 h-6 rounded-full" 
+                          <div
+                            className="w-6 h-6 rounded-full"
                             style={{ backgroundColor: typedPalette.backgroundColor }}
                           ></div>
-                          <div 
-                            className="w-6 h-6 rounded-full" 
+                          <div
+                            className="w-6 h-6 rounded-full"
                             style={{ backgroundColor: typedPalette.accentColor }}
                           ></div>
-                          <div 
-                            className="w-6 h-6 rounded-full" 
+                          <div
+                            className="w-6 h-6 rounded-full"
                             style={{ backgroundColor: typedPalette.cardBackgroundColor }}
                           ></div>
                         </div>
@@ -520,7 +601,7 @@ const COLOR_PALETTES = {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold text-gray-800">Cores Personalizadas</h3>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Cor de Fundo</label>
                     <div className="flex space-x-3">
@@ -578,7 +659,7 @@ const COLOR_PALETTES = {
 
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold text-gray-800">Configurações de Estilo</h3>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Família da Fonte</label>
                     <select
@@ -893,7 +974,7 @@ const COLOR_PALETTES = {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEdit(quiz)}
@@ -902,7 +983,7 @@ const COLOR_PALETTES = {
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
-                        
+
                         <button
                           onClick={() => handleDuplicate(quiz)}
                           className="p-3 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
@@ -910,19 +991,19 @@ const COLOR_PALETTES = {
                         >
                           <DocumentDuplicateIcon className="h-5 w-5" />
                         </button>
-                        
+
                         <button
                           onClick={() => handleTogglePublish(quiz)}
                           className={`p-3 rounded-lg transition-colors ${
-                            quiz.isPublished 
-                              ? 'text-yellow-600 hover:bg-yellow-50' 
+                            quiz.isPublished
+                              ? 'text-yellow-600 hover:bg-yellow-50'
                               : 'text-green-600 hover:bg-green-50'
                           }`}
                           title={quiz.isPublished ? 'Despublicar' : 'Publicar'}
                         >
                           {quiz.isPublished ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
-                        
+
                         <button
                           onClick={() => handleDelete(quiz.id)}
                           className={`p-3 rounded-lg transition-colors ${

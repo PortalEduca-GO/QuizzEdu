@@ -95,7 +95,8 @@ const QuizView: React.FC = () => {
   }, [timerActive, timeLeft, feedback, isFinished, questionKey, currentQuestionIndex, quiz.questions.length]);
 
   const handleAnswerSelect = (answerId: string) => {
-    if (feedback) return;
+    // Proteção extra: só permite seleção se não houver feedback e se não houver resposta já selecionada
+    if (feedback || selectedAnswerId !== null) return;
     setSelectedAnswerId(answerId);
     setTimerActive(false); // Pausa o timer
     // Exibe feedback imediatamente ao selecionar

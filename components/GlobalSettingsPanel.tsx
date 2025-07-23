@@ -124,7 +124,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ onClose }) =>
     type: 'headerLogo' | 'footerLogo' | 'favicon',
     label: string,
     currentImage: string | null,
-    inputRef: React.LegacyRef<HTMLInputElement>
+  inputRef: React.RefObject<HTMLInputElement | null>
   ) => (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-700">{label}</label>
