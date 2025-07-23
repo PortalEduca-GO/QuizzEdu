@@ -140,7 +140,7 @@ const AdminPanel: React.FC = () => {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
 
-  const { quizzes, deleteQuiz, createNewQuiz, saveQuiz } = context;
+  const { quizzes, deleteQuiz, createNewQuiz, saveQuiz, updateQuizLocally, saveAllChanges, dirtyQuizIds } = context;
 
   const generateId = () => `id_${new Date().getTime()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -193,11 +193,13 @@ const AdminPanel: React.FC = () => {
     updateQuizField('customization', updatedCustomization);
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = async () => {
     const newQuiz = createNewQuiz();
-    saveQuiz(newQuiz);
-    setEditingQuiz(newQuiz);
-    setViewMode('edit');
+    const savedQuiz = await saveQuiz(newQuiz);
+    if (savedQuiz) {
+        setEditingQuiz(savedQuiz);
+        setViewMode('edit');
+    }
   };
 
   const handleEdit = (quiz: Quiz) => {
@@ -207,7 +209,7 @@ const AdminPanel: React.FC = () => {
 
   const handleSaveQuiz = () => {
     if (editingQuiz) {
-      saveQuiz(editingQuiz);
+      updateQuizLocally(editingQuiz);
       setEditingQuiz(null);
       setViewMode('list');
     }
@@ -353,7 +355,7 @@ const AdminPanel: React.FC = () => {
 
   const handleTogglePublish = (quiz: Quiz) => {
     const updatedQuiz = { ...quiz, isPublished: !quiz.isPublished };
-    saveQuiz(updatedQuiz);
+    updateQuizLocally(updatedQuiz);
   };
 
   const handleDuplicate = (quiz: Quiz) => {
@@ -854,7 +856,18 @@ const AdminPanel: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
               <p className="mt-2 text-gray-600">Gerencie seus quizzes e configurações do site</p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex items-center space-x-3">
+              {dirtyQuizIds.size > 0 && (
+                  <button
+                    onClick={saveAllChanges}
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-lg animate-pulse"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Salvar Alterações ({dirtyQuizIds.size})
+                  </button>
+              )}
               <button
                 onClick={handleOpenSettings}
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg"
@@ -941,7 +954,7 @@ const AdminPanel: React.FC = () => {
             </div>
             <ul className="divide-y divide-gray-200">
               {quizzes.map((quiz) => (
-                <li key={quiz.id} className="hover:bg-gray-50 transition-colors">
+                <li key={quiz.id} className={`transition-colors ${dirtyQuizIds.has(quiz.id) ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'}`}>
                   <div className="px-6 py-6">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
@@ -968,6 +981,7 @@ const AdminPanel: React.FC = () => {
                                 ❓ {quiz.questions?.length || 0} perguntas
                               </span>
                               <span className={`flex items-center font-semibold ${quiz.isPublished ? 'text-green-600' : 'text-yellow-600'}`}>
+                                {dirtyQuizIds.has(quiz.id) && <span className="text-xs font-bold text-yellow-700 mr-2">(Não salvo)</span>}
                                 {quiz.isPublished ? '✅ Publicado' : '📝 Rascunho'}
                               </span>
                             </div>

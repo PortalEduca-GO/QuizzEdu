@@ -1,11 +1,19 @@
 import { supabase } from './supabaseClient';
 import type { Quiz } from '../types';
 
-export async function saveQuizToSupabase(quiz: Quiz) {
-  const { error } = await supabase
+export async function saveQuizToSupabase(quiz: Quiz): Promise<Quiz> {
+  const { data, error } = await supabase
     .from('quizzes')
-    .upsert([quiz], { onConflict: 'id' });
-  return error;
+    .upsert([quiz], { onConflict: 'id' })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Supabase save error:', error);
+    throw error;
+  }
+  
+  return data as Quiz;
 }
 
 export async function loadQuizzesFromSupabase() {

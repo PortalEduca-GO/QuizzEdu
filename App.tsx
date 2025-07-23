@@ -143,6 +143,14 @@ const App: React.FC = () => {
   // Efeito para limpar quizzes inválidos do localStorage e garantir pelo menos um quiz publicado
   // Remove fallback localStorage init
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
+  const [dirtyQuizIds, setDirtyQuizIds] = useState(new Set<string>());
+
+  const updateQuizLocally = useCallback((quizToUpdate: Quiz) => {
+    setQuizzes(prevQuizzes =>
+      prevQuizzes.map(q => (q.id === quizToUpdate.id ? quizToUpdate : q))
+    );
+    setDirtyQuizIds(prevIds => new Set(prevIds).add(quizToUpdate.id));
+  }, []);
 
   const [globalSettings, setGlobalSettings] = useState<GlobalPageSettings>(createDefaultGlobalSettings());
   // Carregar configurações globais do Supabase ao iniciar o app
@@ -253,10 +261,39 @@ const App: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  const saveQuiz = useCallback(async (quizToSave: Quiz) => {
-    await saveQuizToSupabase({ ...quizToSave, updatedAt: new Date().toISOString() });
-    const remoteQuizzes = await loadQuizzesFromSupabase();
-    setQuizzes(remoteQuizzes);
+  const saveAllChanges = useCallback(async () => {
+    const quizzesToSave = quizzes.filter(q => dirtyQuizIds.has(q.id));
+    if (quizzesToSave.length === 0) {
+      alert('Nenhuma alteração para salvar.');
+      return;
+    }
+
+    try {
+      const savePromises = quizzesToSave.map(quiz =>
+        saveQuizToSupabase({ ...quiz, updatedAt: new Date().toISOString() })
+      );
+      await Promise.all(savePromises);
+      
+      setDirtyQuizIds(new Set()); // Limpa o set de quizzes "sujos"
+      alert(`${quizzesToSave.length} quiz(zes) salvos com sucesso!`);
+
+    } catch (error) {
+      console.error('Failed to save all changes:', error);
+      alert('Ocorreu um erro ao salvar as alterações. Verifique o console para mais detalhes.');
+    }
+  }, [quizzes, dirtyQuizIds]);
+
+  const saveQuiz = useCallback(async (quizToSave: Quiz): Promise<Quiz | null> => {
+    try {
+      const savedQuiz = await saveQuizToSupabase({ ...quizToSave, updatedAt: new Date().toISOString() });
+      const remoteQuizzes = await loadQuizzesFromSupabase();
+      setQuizzes(remoteQuizzes);
+      return savedQuiz;
+    } catch (error) {
+      console.error('Failed to save quiz:', error);
+      alert('Ocorreu um erro ao salvar o quiz. Verifique o console para mais detalhes.');
+      return null;
+    }
   }, []);
 
   const deleteQuiz = useCallback(async (quizId: string) => {
@@ -306,12 +343,18 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const saveGlobalSettings = useCallback((settings: GlobalPageSettings) => {
+  const saveGlobalSettings = useCallback(async (settings: GlobalPageSettings) => {
     try {
+      // Salva localmente para feedback rápido da UI
       localStorage.setItem(GLOBAL_SETTINGS_KEY, JSON.stringify(settings));
       setGlobalSettings(settings);
+      
+      // Salva no Supabase
+      const { saveAdminConfig } = await import('./utils/supabaseConfig');
+      await saveAdminConfig('global_settings', settings);
+
     } catch (error) {
-      console.error("Failed to save global settings to localStorage", error);
+      console.error("Failed to save global settings", error);
     }
   }, []);
 
@@ -333,7 +376,10 @@ const App: React.FC = () => {
     setQuiz: setCurrentQuiz,
     quizzes,
     setQuizzes,
-    saveQuiz, 
+    saveQuiz,
+    updateQuizLocally,
+    saveAllChanges,
+    dirtyQuizIds,
     deleteQuiz,
     createNewQuiz,
     loadQuiz,
@@ -343,7 +389,7 @@ const App: React.FC = () => {
     globalSettings,
     setGlobalSettings,
     saveGlobalSettings
-  }), [currentQuiz, quizzes, saveQuiz, deleteQuiz, createNewQuiz, loadQuiz, isAuthenticated, login, logout, globalSettings, saveGlobalSettings]);
+  }), [currentQuiz, quizzes, saveQuiz, updateQuizLocally, saveAllChanges, dirtyQuizIds, deleteQuiz, createNewQuiz, loadQuiz, isAuthenticated, login, logout, globalSettings, saveGlobalSettings]);
 
   return (
     <QuizContext.Provider value={quizContextValue}>

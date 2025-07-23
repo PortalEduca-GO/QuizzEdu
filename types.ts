@@ -74,8 +74,11 @@ export interface QuizContextType {
   setQuiz: Dispatch<SetStateAction<Quiz | null>>;
   quizzes: Quiz[];
   setQuizzes: Dispatch<SetStateAction<Quiz[]>>;
-  saveQuiz: (quizToSave: Quiz) => void;
-  deleteQuiz: (quizId: string) => void;
+  saveQuiz: (quizToSave: Quiz) => Promise<Quiz | null>;
+  updateQuizLocally: (quizToUpdate: Quiz) => void;
+  saveAllChanges: () => Promise<void>;
+  dirtyQuizIds: Set<string>;
+  deleteQuiz: (quizId: string) => Promise<void>;
   createNewQuiz: () => Quiz;
   loadQuiz: (quizId: string) => void;
   isAuthenticated: boolean;
